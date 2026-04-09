@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>แบบทดสอบ: คุณเป็นกอสระเอประเภทไหน?</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans Thai', 'Noto Sans', sans-serif;
+    background: #f8f7fc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .quiz-container {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    background: #ede9f6;
+    border-radius: 50px;
+    height: 6px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #7c3aed;
+    border-radius: 50px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-text {
+    color: #9ca3af;
+    font-size: 14px;
+    margin-bottom: 8px;
+    text-align: right;
+  }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 20px;
+    padding: 28px 24px;
+    display: none;
+    animation: slideIn 0.45s ease;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.06);
+  }
+
+  .card.active { display: block; }
+
+  /* Landing */
+  .landing-emoji {
+    font-size: 56px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .landing-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1f2937;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .landing-sub {
+    font-size: 15px;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .landing-info {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .landing-info span {
+    background: #f3f0ff;
+    color: #7c3aed;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 50px;
+  }
+
+  .landing-note {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .btn-start {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-start:hover {
+    background: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.25);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-number {
+    display: inline-block;
+    background: #7c3aed;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    color: #1f2937;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    background: #fafafa;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .option:hover {
+    background: #f3f0ff;
+    border-color: #c4b5fd;
+    transform: translateX(4px);
+  }
+
+  .option .letter {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: #ede9f6;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+  }
+
+  .option.selected {
+    border-color: #7c3aed;
+    background: #f3f0ff;
+  }
+
+  .option.selected .letter {
+    background: #7c3aed;
+    color: #fff;
+  }
+
+  .option.disabled { pointer-events: none; }
+
+  /* Next Button */
+  .btn-next {
+    display: none;
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-next:hover {
+    background: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.25);
+  }
+
+  .btn-next.show { display: block; animation: slideIn 0.3s ease; }
+
+  /* Result Card */
+  .result-card {
+    text-align: center;
+    display: none;
+    animation: slideIn 0.5s ease;
+  }
+
+  .result-card.active { display: block; }
+
+  .result-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .result-score {
+    font-size: 24px;
+    font-weight: 800;
+    color: #7c3aed;
+    margin-bottom: 4px;
+  }
+
+  .result-label {
+    color: #9ca3af;
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  .result-message {
+    color: #4b5563;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.8;
+    margin-bottom: 28px;
+    text-align: left;
+    background: #f8f7fc;
+    padding: 16px 20px;
+    border-radius: 14px;
+  }
+
+  .btn-restart {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-restart:hover {
+    background: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.25);
+  }
+
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <!-- Landing -->
+  <div class="card active" id="landingCard">
+    <div class="landing-emoji">🌈</div>
+    <div class="landing-title">คุณเป็นกอสระเอประเภทไหน?</div>
+    <div class="landing-sub">แบบทดสอบสุดฮา 10 ข้อ ที่จะบอกว่าคุณเป็นกอสระเอสายไหนกันแน่!?</div>
+    <div class="landing-info">
+      <span>📝 10 ข้อ</span>
+      <span>⏱️ ใช้เวลา 2 นาที</span>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">เริ่มทำแบบทดสอบ →</button>
+  </div>
+
+  <!-- Progress -->
+  <div id="progressArea" style="display:none;">
+    <div class="progress-text"><span id="currentQ">1</span> / 10</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- Question Cards rendered by JS -->
+  <div id="quizArea"></div>
+
+  <!-- Result -->
+  <div class="card result-card" id="resultCard">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-label" id="resultLabel"></div>
+    <div class="result-message" id="resultMsg"></div>
+    <button class="btn-restart" onclick="restartQuiz()">ทำแบบทดสอบอีกครั้ง</button>
+  </div>
+</div>
+
+<script>
+
+const _d = JSON.parse(atob("W1tbMCwzLDAsMCwwLDNdLFswLDAsMCwzLDMsMF0sWzAsMCwzLDAsMywwXSxbMywwLDMsMCwwLDBdXSxbWzMsMCwzLDAsMCwwXSxbMCwwLDAsMCwzLDBdLFswLDAsMCwzLDAsMF0sWzAsMywzLDAsMCwwXV0sW1szLDAsMCwzLDAsMF0sWzAsMywwLDAsMCwzXSxbMCwwLDMsMCwwLDBdLFswLDAsMCwwLDMsMF1dLFtbMCwwLDMsMywwLDBdLFswLDAsMCwwLDAsM10sWzAsMCwwLDAsMywwXSxbMywzLDAsMCwwLDBdXSxbWzMsMywwLDAsMCwwXSxbMCwwLDAsMywwLDBdLFswLDAsMywwLDAsMF0sWzAsMCwwLDAsMywzXV0sW1swLDMsMCwzLDAsMF0sWzAsMCwwLDAsMywwXSxbMCwwLDAsMCwwLDNdLFszLDAsMywwLDAsMF1dLFtbMywwLDAsMywwLDBdLFswLDAsMywwLDAsMF0sWzAsMCwwLDAsMywwXSxbMCwzLDAsMCwwLDNdXSxbWzAsMywwLDAsMCwwXSxbMCwwLDMsMywwLDBdLFszLDAsMCwwLDAsMF0sWzAsMCwwLDAsMywzXV0sW1swLDAsMywzLDAsMF0sWzMsMCwwLDAsMCwwXSxbMCwzLDAsMCwwLDBdLFswLDAsMCwwLDMsM11dLFtbMywwLDAsMCwwLDBdLFswLDMsMywwLDAsMF0sWzAsMCwwLDAsMywzXSxbMCwwLDMsMywwLDNdXV0="));
+const quizData = [
+  { question: "คุณมีแพลนจะออกไปข้างนอก แต่ฝนตก คุณจะทำยังไง?", options: [
+    { text: "ท่องคาถาหยุดฝน" },
+    { text: "บ่นว่า \"มาตกอะไรตอนนี้ หึ้ยฝนบ้า!\" แล้วล้มเลิกแพลน" },
+    { text: "ตกแล้วไง ต่อให้เปียกฝนก็ดูดี" },
+    { text: "เปิดเพลงรถแห่เต้นรอฝนหยุด" }
+  ]},
+  { question: "คุณกำลังเดินเล่นอยู่ในสวนสาธารณะ จู่ๆ ก็มีคนชวนคุณไปเต้นแอโรบิก คุณจะ...?", options: [
+    { text: "ไม่ไป เพราะชอบเต้นหน้าฮ่านหมอลำมากกว่า" },
+    { text: "ไปด้วย แต่ไม่เต้นเพราะติดแอ็ค" },
+    { text: "ไม่ไป แล้วบอกกลับไปว่า \"อย่ามายุ่ง\" จากนั้นก็เชิดหน้าใส่" },
+    { text: "ไปด้วย แล้วเต้นแรง หมุนเอวแรงกว่าทุกคน" }
+  ]},
+  { question: "ถ้าเลือกให้เป็นสัตว์ได้ 1 ชนิด คุณจะเลือกเป็นสัตว์อะไร?", options: [
+    { text: "นกแตดแต้" },
+    { text: "พญานาค" },
+    { text: "ลิงลพ" },
+    { text: "เห็บหมา" }
+  ]},
+  { question: "ในวันที่อากาศร้อนมาก คุณจะทำอะไรให้หายร้อน?", options: [
+    { text: "ไม่ทำอะไร ร้อนมากก็แค่วีนลงโซเชียล เดี๋ยวก็อารมณ์ดีขึ้น" },
+    { text: "อ่านนิยายกอสระเอฟรินๆ" },
+    { text: "ไถดราม่าในโซเชียล ดูคนด่ากันแล้วอารมณ์ดี" },
+    { text: "เปิดเพลงมนต์แคน ซอนแบนิมฟังให้อารมณ์ดี" }
+  ]},
+  { question: "ถ้ามีคนมาสวนโพคู่ชิป คุณจะทำยังไง?", options: [
+    { text: "ทเวิร์คตูดร้อยครั้งเป็นการข่มอารมณ์" },
+    { text: "แคปไปฟ้องเพื่อน หาพวกช่วยด่า" },
+    { text: "สวนโพคืน แล้วก็โพสต์ด่าอีกร้อยโพสต์ในแอคตัวเอง" },
+    { text: "บล็อกแล้วค่อยบ่น" }
+  ]},
+  { question: "ถ้าคนที่คุณชอบมาสารภาพรัก คุณจะตอบเขาไปว่าอย่างไร?", options: [
+    { text: "ไม่ตอบ เพราะชอบแต่ไม่ได้อยากเป็นแฟน" },
+    { text: "ไม่ตอบ แต่แอคใส่" },
+    { text: "\"เป็นแฟนกันไหม\" จากนั้นชวนไปดูแมวที่ห้อง" },
+    { text: "ทเวิร์คตูดเต้นดีใจ แล้วสารภาพรักเขากลับ" }
+  ]},
+  { question: "คุณมีแพลนไปเที่ยว คุณจะใช้รถอะไรไปทริปครั้งนี้?", options: [
+    { text: "มอไซ CPX เบาะท้าย ชิชิงอน" },
+    { text: "กระบะซิ่ง เอาไว้ขนเพื่อนไปเที่ยวด้วยกัน" },
+    { text: "เบนซ์สีแดง 43 ที่นั่ง หรูหราสมฐานะ" },
+    { text: "ไม่เอาไป ให้คนอื่นมารับแทน" }
+  ]},
+  { question: "สไตล์เพลงที่คุณฟังบ่อย?", options: [
+    { text: "ลายสักการะ" },
+    { text: "ฮิปฮอป แรพด่าสนั่น" },
+    { text: "ลูกทุ่งอีสาน" },
+    { text: "ไทยรีมิกซ์" }
+  ]},
+  { question: "ถ้าคุณเป็นอินฟลู คุณจะเป็นอินฟลูสายไหน?", options: [
+    { text: "สายเล่นละคร จำบทแอคติ้งเล่นคนเดียวทุกบทร้อยเทค" },
+    { text: "สายเต้น เต้นทุกเพลงที่เป็นไวรัล" },
+    { text: "สายวัฒนธรรม สายมู มีแต่คลิปเดินทางไปมู" },
+    { text: "สายไลฟ์โค้ช สอนทุกคนแต่ไม่สอนตัวเอง" }
+  ]},
+  { question: "สุดท้าย... คุณคิดว่าตัวเองเป็นเกแบบไหน?", options: [
+    { text: "เกขี้เสือก" },
+    { text: "เกขี้วีน" },
+    { text: "เกขี้แอ๊บ" },
+    { text: "เกคนดี" }
+  ]}
+];
+
+const letters = ["ก", "ข", "ค", "ง"];
+let current = 0;
+let userAnswers = [];
+
+function renderQuiz() {
+  const area = document.getElementById("quizArea");
+  area.innerHTML = "";
+
+  quizData.forEach((q, i) => {
+    const card = document.createElement("div");
+    card.className = "card" + (i === 0 ? " active" : "");
+    card.id = "card-" + i;
+
+    let optionsHTML = q.options.map((opt, j) =>
+      `<div class="option" onclick="selectAnswer(${i}, ${j})" id="opt-${i}-${j}">
+        <div class="letter">${letters[j]}</div>
+        <span>${opt.text}</span>
+      </div>`
+    ).join("");
+
+    card.innerHTML = `
+      <div class="question-number">ข้อที่ ${i + 1}</div>
+      <div class="question-text">${q.question}</div>
+      <div class="options">${optionsHTML}</div>
+
+      <button class="btn-next" id="btn-${i}" onclick="nextQuestion(${i})">
+        ${i < quizData.length - 1 ? "ข้อถัดไป →" : "ดูผลลัพธ์ →"}
+      </button>
+    `;
+
+    area.appendChild(card);
+  });
+
+  updateProgress();
+}
+
+function startQuiz() {
+  document.getElementById("landingCard").classList.remove("active");
+  document.getElementById("progressArea").style.display = "block";
+  renderQuiz();
+}
+
+function selectAnswer(qIndex, optIndex) {
+  const options = document.querySelectorAll(`#card-${qIndex} .option`);
+  const btn = document.getElementById(`btn-${qIndex}`);
+
+  // Clear previous selection
+  options.forEach(o => o.classList.remove("selected"));
+
+  userAnswers[qIndex] = optIndex;
+
+  options[optIndex].classList.add("selected");
+  btn.classList.add("show");
+}
+
+function nextQuestion(qIndex) {
+  const currentCard = document.getElementById("card-" + qIndex);
+  currentCard.classList.remove("active");
+
+  if (qIndex < quizData.length - 1) {
+    current = qIndex + 1;
+    const nextCard = document.getElementById("card-" + current);
+    nextCard.classList.add("active");
+    updateProgress();
+  } else {
+    showResult();
+  }
+}
+
+function updateProgress() {
+  document.getElementById("currentQ").textContent = current + 1;
+  document.getElementById("progressFill").style.width = ((current + 1) / quizData.length * 100) + "%";
+}
+
+const personalities = [
+  {
+    icon: "🏡",
+    title: "เกไทบ้าน",
+    label: "ซนๆ ดื้อบ้าง เชื่อฟังบ้าง รักสนุกเป็นชีวิตจิตใจ",
+    msg: "คุณคือเกไทบ้านแท้ๆ ที่เกิดมาเพื่อสนุก เปิดเพลงรถแห่ได้ทุกที่ทุกเวลา ไม่ว่าจะงานบวชหรือกลางห้าง นั่งมอไซ CPX เบาะท้ายชิชิงอนคือความสุขที่เงินซื้อไม่ได้ (จริงๆ ซื้อได้เพราะแอบลักข้าวบนยุ้งไปขาย) ลูกทุ่งอีสานคือเพลงชาติ ส้มตำคืออาหารหลัก เพื่อนรักคุณเพราะอยู่ด้วยแล้วไม่มีวันเงียบ ดื้อซะจนแม่ยอมแพ้ แต่น่ารักซะจนทุกคนให้อภัย คุณคือแสงสว่างของทุกวงที่ไม่ต้องพยายาม"
+  },
+  {
+    icon: "🐉",
+    title: "เกพญานาค",
+    label: "เกวัฒนธรรม จินตนาการสูง รักการใช้เอว",
+    msg: "คุณคือนาคีแห่งวงการกอสระเอ จินตนาการพุ่งกว่าพญานาคพ่นน้ำ เอวพลิ้วไหวราวกับสายน้ำตอนน้ำท่วม ฟังเพลงลายสักการะแล้วเข้าฌานได้ทันที เวลาเต้นหมุนเอวทีนึง คนรอบข้างต้องหลบ เพราะรัศมีความแซ่บมันกว้าง สายมูตัวแม่ ไปไหว้พระธาตุทุกวันพระ สาธุเด้อปู่ ท่องคาถาได้คล่องกว่าท่องสูตรคูณ ชีวิตคุณคือการผสมผสานระหว่างวัฒนธรรมกับความเป๊ะ ใครว่าเกเต้นไม่ได้ คุณจะทเวิร์คให้ดูเป็นขวัญตา"
+  },
+  {
+    icon: "🐒",
+    title: "เกลิงลพ",
+    label: "ประสาทแดก ชอบวีน ทำตัวเพี้ยนๆ ไม่เต็ม",
+    msg: "คุณคือลิงลพตัวจริงของวงการ วันๆ ชวนเพื่อนหาเรื่องด่าคนคือกิจวัตร เปิดโซเชียลมาก็โพสต์ด่าก่อนกินข้าวเช้า ทะเลาะกับใครก็สวนโพคืนแบบไม่ต้องคิด แล้วก็ด่าต่ออีกร้อยโพสต์ในแอคตัวเอง เพื่อนรักคุณเพราะอยู่ด้วยแล้วสนุก แต่บางทีก็กลัวจะโดนด่าด้วย ความสามารถพิเศษคือทำตัวเพี้ยนจนคนคิดว่าคุณไม่เต็มบาท แต่จริงๆ คุณเต็มบาทนะ แค่เศษสตางค์มันหายไปหน่อย!"
+  },
+  {
+    icon: "🐔",
+    title: "เกไก่โอ้ก",
+    label: "สายด่า สายจิกๆ เหมือนไก่ ชอบพูดจาเหน็บแนม",
+    msg: "โอ้ก โอ้ก โอ้ก! คุณคือไก่โอ้กตัวแม่ที่จิกทุกคนไม่เลือกหน้า ปากคุณคมยิ่งกว่ามีดหั่นหมูของแม่ค้าในตลาด เหน็บแนมได้ทุกสถานการณ์ จนคนโดนยังไม่รู้ว่าโดนด่า แคปหลักฐานไปฟ้องเพื่อนหาพวกช่วยด่าคือวิชาเอก แต่เบื้องหลังความจิกจิกนี้ คุณกำลังฝึกตัวเองให้ดีขึ้นเรื่อยๆ เพื่อที่จะให้คนอื่นด่าคืนไม่ได้ นั่นคือ Growth Mindset ที่แท้จริง! ใครอยู่ใกล้คุณต้องระวัง เพราะไม่รู้ว่าจะโดนจิกตอนไหน!"
+  },
+  {
+    icon: "🤴",
+    title: "คุณชายแบบพี่ชาวี่",
+    label: "เบียวๆ ติดแอค แต่ปัญญาอ่อนในตัวสูง",
+    msg: "คุณคือคุณชายตัวจริงเสียงจริง ติดแอ็คหนักมาก ไปไหนต้องเบียวๆ ถ่ายรูปต้องมุมดี แสงดี ลมพัดผมปลิวพอดี แต่พอเปิดปากพูดทีไร... ปัญญาอ่อนอย่างกะตั้งใจ! เพื่อนชวนไปเต้นแอโรบิกก็ไป แต่ไม่เต้นเพราะติดแอ็ค ยืนดูอย่างเดียว ไถดราม่าในโซเชียลแล้วอารมณ์ดี ฟังเพลงไทยรีมิกซ์แล้วรู้สึกเป็นไฮโซ ขับเบนซ์สีแดง 43 ที่นั่ง (ในจินตนาการ) คุณคือคนที่ดูแพงแต่ข้างในเป็นเด็ก 5 ขวบ และนั่นคือเสน่ห์"
+  },
+  {
+    icon: "📿",
+    title: "เกถือศีลแตด",
+    label: "แอ๊บเป็นคนดี แต่ในหัวมีแต่เรื่องจังไร",
+    msg: "สาธุ! คุณคือเกถือศีลแตดตัวจริง ภายนอกดูเรียบร้อย สงบ สำรวม ท่องคาถาได้ทุกบท ไปวัดทุกวันพระ แต่ในหัว... มีแต่เรื่องจังไร 18+ ตลอด 24 ชม.! อ่านนิยายกอสระเอฟรินๆ >< แล้วบอกว่าอ่านเพื่อการศึกษา ชวนคนไปดูแมวที่ห้องแต่ไม่มีแมว บล็อกคนแล้วค่อยบ่นลับหลัง สอนคนอื่นให้เป็นคนดีแต่ไม่สอนตัวเอง คุณคือมนุษย์สองหน้าที่น่ารักที่สุดในจักรวาล "
+  }
+];
+
+function showResult() {
+  document.getElementById("progressArea").style.display = "none";
+
+  const card = document.getElementById("resultCard");
+  card.classList.add("active");
+
+  // Sum scores across all answers
+  const totals = [0, 0, 0, 0, 0, 0];
+  userAnswers.forEach((optIdx, qIdx) => {
+    if (optIdx !== undefined) {
+      _d[qIdx][optIdx].forEach((s, i) => { totals[i] += s; });
+    }
+  });
+
+  const maxScore = Math.max(...totals);
+  const topIndex = totals.indexOf(maxScore);
+
+  const p = personalities[topIndex];
+  document.getElementById("resultIcon").textContent = p.icon;
+  document.getElementById("resultScore").textContent = p.title;
+  document.getElementById("resultLabel").textContent = p.label;
+  document.getElementById("resultMsg").textContent = p.msg;
+}
+
+function restartQuiz() {
+  current = 0;
+  userAnswers = [];
+
+  document.getElementById("resultCard").classList.remove("active");
+  document.getElementById("quizArea").innerHTML = "";
+  document.getElementById("landingCard").classList.add("active");
+}
+
+</script>
+
+</body>
+</html>
